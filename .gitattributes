@@ -1,0 +1,28 @@
+﻿# Normalize line endings on checkout
+* text=auto
+
+# Shell scripts — always LF
+*.sh text eol=lf
+
+# Markdown and text files
+*.md text eol=lf
+
+# Go source
+*.go text eol=lf
+
+# Python source
+*.py text eol=lf
+
+# TypeScript/JavaScript
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+
+# Config files
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+
+# Proto
+*.proto text eol=lf
