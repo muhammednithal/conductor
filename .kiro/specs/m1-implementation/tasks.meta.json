@@ -1,0 +1,499 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create `shared/proto/conductor.proto`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099964639
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099970900
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104482295
+      }
+    ],
+    "1.2 Create pre-generated Go stubs in `shared/proto/conductorpb/`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099964697
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104488985
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104893347
+      }
+    ],
+    "2.1 Create `orchestrator/go.mod`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099964763
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104489252
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104893559
+      }
+    ],
+    "2.2 Create `orchestrator/Makefile`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099964799
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104489115
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104893183
+      }
+    ],
+    "2.3 Create `orchestrator/cmd/orchestrator/main.go` (stub)": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099964837
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104903483
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104963060
+      }
+    ],
+    "3.1 Create `worker/go.mod`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099964878
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104489370
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104893453
+      }
+    ],
+    "3.2 Create `worker/Makefile`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099964913
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104489467
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104893681
+      }
+    ],
+    "3.3 Create `worker/cmd/worker/main.go` (stub)": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099964949
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104903366
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104963211
+      }
+    ],
+    "4.1 Create `orchestrator/migrations/001_initial.sql`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965000
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104904269
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104963323
+      }
+    ],
+    "5.1 Create `orchestrator/internal/statemachine/statemachine.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965054
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104973068
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105288896
+      }
+    ],
+    "5.2 Create `orchestrator/internal/statemachine/statemachine_test.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965092
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105309805
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105498522
+      }
+    ],
+    "6.1 Create `orchestrator/internal/db/db.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965146
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104973453
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105288987
+      }
+    ],
+    "7.1 Create `orchestrator/internal/redis/client.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965188
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104973309
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105289105
+      }
+    ],
+    "8.1 Create `orchestrator/internal/grpcserver/server.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965232
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105309378
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105498572
+      }
+    ],
+    "9.1 Create `orchestrator/internal/scheduler/scheduler.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965274
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105309654
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105498660
+      }
+    ],
+    "10.1 Replace `orchestrator/cmd/orchestrator/main.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965325
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105511317
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105705674
+      }
+    ],
+    "11.1 Create `worker/internal/grpcclient/client.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965374
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104973560
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105289212
+      }
+    ],
+    "12.1 Create `worker/internal/executor/registry.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965432
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104973656
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105289327
+      }
+    ],
+    "12.2 Create `worker/internal/executor/http.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965487
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104973757
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105289435
+      }
+    ],
+    "12.3 Create `worker/internal/executor/transform.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965538
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104973860
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105289524
+      }
+    ],
+    "12.4 Create `worker/internal/executor/delay.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965582
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104973961
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105289657
+      }
+    ],
+    "13.1 Replace `worker/cmd/worker/main.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965620
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105511447
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105705785
+      }
+    ],
+    "14.1 Create `orchestrator/internal/integration/linear_workflow_test.go`": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965666
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105731215
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791106421753
+      }
+    ],
+    "15. Final checkpoint": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791099965708
+      },
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791106426436
+      }
+    ],
+    "1. Scaffold shared proto and generated Go stubs": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104893779
+      }
+    ],
+    "2. Scaffold orchestrator Go module": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104963463
+      }
+    ],
+    "3. Scaffold worker Go module": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104963590
+      }
+    ],
+    "4. Write SQL migration": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791104963709
+      }
+    ],
+    "6. Implement orchestrator DB layer": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105289764
+      }
+    ],
+    "7. Implement orchestrator Redis client": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105289858
+      }
+    ],
+    "11. Implement worker gRPC client and heartbeat": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105289928
+      }
+    ],
+    "5. Implement statemachine package": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105498694
+      }
+    ],
+    "8. Implement orchestrator gRPC server": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105498744
+      }
+    ],
+    "9. Implement orchestrator scheduler loop": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105498838
+      }
+    ],
+    "10. Wire orchestrator main": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105705880
+      }
+    ],
+    "13. Wire worker main": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791105706001
+      }
+    ],
+    "14. Integration test — 3-step linear workflow": [
+      {
+        "executionId": "8f0b6c48-28c3-4567-9c34-2cec54e557a5",
+        "chatSessionId": "sess_88f7ece2-cfc1-4f44-9482-d0cb25a66014",
+        "timestamp": 1791106421967
+      }
+    ]
+  }
+}

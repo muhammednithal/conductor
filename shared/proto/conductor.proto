@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package conductor;
+
+option go_package = "github.com/conductor/orchestrator/shared/proto/conductorpb";
+
+service OrchestratorService {
+  rpc RegisterWorker(RegisterWorkerRequest) returns (stream TaskAssignment);
+  rpc AckTask(AckTaskRequest) returns (AckTaskResponse);
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+}
+
+message RegisterWorkerRequest {
+  string worker_id = 1;
+  string hostname  = 2;
+  int32  capacity  = 3;
+}
+
+message TaskAssignment {
+  string task_id           = 1;
+  string step_execution_id = 2;
+  string step_type         = 3;
+  bytes  config            = 4;
+  bytes  input             = 5;
+  string idempotency_key   = 6;
+}
+
+message AckTaskRequest {
+  string task_id       = 1;
+  string worker_id     = 2;
+  string status        = 3;
+  bytes  output        = 4;
+  string error_message = 5;
+}
+
+message AckTaskResponse {
+  bool success = 1;
+}
+
+message HeartbeatRequest {
+  string          worker_id = 1;
+  repeated string task_ids  = 2;
+}
+
+message HeartbeatResponse {
+  repeated string canceled_task_ids = 1;
+}
