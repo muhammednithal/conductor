@@ -64,3 +64,18 @@ func (c *Client) PopTask(ctx context.Context, timeout time.Duration) (string, er
 func (c *Client) FlushDB(ctx context.Context) error {
 	return c.rdb.FlushDB(ctx).Err()
 }
+
+// PublishStepEvent publishes a step state change to the run's pub/sub channel.
+// Channel: conductor:events:{runID}
+// Payload: {"step_execution_id":"...","step_name":"...","status":"..."}
+func (c *Client) PublishStepEvent(ctx context.Context, runID, stepExecutionID, stepName, status string) error {
+payload := fmt.Sprintf(
+`{"step_execution_id":%q,"step_name":%q,"status":%q}`,
+stepExecutionID, stepName, status,
+)
+channel := "conductor:events:" + runID
+if err := c.rdb.Publish(ctx, channel, payload).Err(); err != nil {
+return fmt.Errorf("redis: publish event run %s step %s: %w", runID, stepExecutionID, err)
+}
+return nil
+}
