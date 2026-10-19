@@ -201,7 +201,7 @@ All Go code uses module names `github.com/conductor/orchestrator` and `github.co
     - Implement `ackSucceeded(ctx, a, output)` and `ackFailed(ctx, a, errMsg)` calling `stub.AckTask`
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6_
 
-- [ ] 12. Implement step executors
+- [x] 12. Implement step executors
   - Implement the four executor files in `worker/internal/executor/` — registry, HTTP, transform, and delay
   - _Requirements: 8.1–8.6_
   - Dependencies: 3.1
@@ -264,7 +264,7 @@ All Go code uses module names `github.com/conductor/orchestrator` and `github.co
     - Defer cleanup: delete leases, step_executions, workflow_runs, workers, workflows, users rows for test data (or truncate test tables)
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
 
-- [-] 15. Final checkpoint
+- [x] 15. Final checkpoint
   - Ensure all tests pass, ask the user if questions arise.
   - Run `make test` in `orchestrator/` — all unit tests and the integration test (with env vars set) must pass
   - Run `make lint` in both `orchestrator/` and `worker/` — `go vet` must produce no errors
