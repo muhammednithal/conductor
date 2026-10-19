@@ -1,12 +1,11 @@
-// Package grpcserver implements the OrchestratorService gRPC server.
+﻿// Package grpcserver implements the OrchestratorService gRPC server.
 package grpcserver
 
 import (
 	"context"
 	"fmt"
 	"log"
-	"math"
-	"math/rand"
+		"github.com/conductor/orchestrator/internal/backoff"
 	"time"
 
 	"github.com/conductor/orchestrator/internal/db"
@@ -155,8 +154,8 @@ func (s *Server) AckTask(ctx context.Context, req *conductorpb.AckTaskRequest) (
 			_ = s.db.UpdateStepError(ctx, req.TaskId, req.ErrorMessage)
 		}
 		if step.AttemptCount < step.MaxAttempts {
-			backoff := computeBackoff(step.AttemptCount)
-			_ = s.db.SetStepScheduledAfter(ctx, req.TaskId, time.Now().Add(backoff))
+			delay := backoff.Compute(step.AttemptCount)
+			_ = s.db.SetStepScheduledAfter(ctx, req.TaskId, time.Now().Add(delay))
 			if err := statemachine.Transition(ctx, s.db, req.TaskId, "RETRYING"); err != nil {
 				return nil, fmt.Errorf("grpcserver: transition step %s to RETRYING: %w", req.TaskId, err)
 			}
@@ -207,13 +206,4 @@ func (s *Server) Heartbeat(ctx context.Context, req *conductorpb.HeartbeatReques
 	}
 
 	return &conductorpb.HeartbeatResponse{CanceledTaskIds: canceledIDs}, nil
-}
-
-// computeBackoff returns the retry delay for attempt n (0-indexed).
-// Formula: min(1s * 2^n, 300s) * uniform(0.8, 1.2)
-func computeBackoff(attempt int) time.Duration {
-	base := float64(time.Second)
-	exp := math.Min(base*math.Pow(2, float64(attempt)), float64(300*time.Second))
-	jitter := 0.8 + rand.Float64()*0.4 // uniform [0.8, 1.2]
-	return time.Duration(exp * jitter)
 }

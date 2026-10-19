@@ -1,4 +1,4 @@
-package db
+﻿package db
 
 import (
 	"context"
@@ -496,4 +496,63 @@ func scanStepRows(rows pgx.Rows) ([]StepExecution, error) {
 		return nil, fmt.Errorf("db: step rows error: %w", err)
 	}
 	return steps, nil
+}
+
+// --- M2 additions ---
+
+// ExpiredLease carries the fields needed by the reclaimer and recovery.
+type ExpiredLease struct {
+LeaseID         string
+StepExecutionID string
+WorkerID        string
+AttemptCount    int
+MaxAttempts     int
+}
+
+// GetExpiredLeases returns all lease rows with expires_at < NOW(),
+// joined with step_executions for attempt_count and max_attempts.
+func (d *DB) GetExpiredLeases(ctx context.Context) ([]ExpiredLease, error) {
+rows, err := d.pool.Query(ctx, `
+SELECT l.id, l.step_execution_id, l.worker_id,
+       se.attempt_count, se.max_attempts
+FROM leases l
+JOIN step_executions se ON se.id = l.step_execution_id
+WHERE l.expires_at < NOW()
+`)
+if err != nil {
+return nil, fmt.Errorf("db: get expired leases: %w", err)
+}
+defer rows.Close()
+var leases []ExpiredLease
+for rows.Next() {
+var el ExpiredLease
+if err := rows.Scan(
+&el.LeaseID, &el.StepExecutionID, &el.WorkerID,
+&el.AttemptCount, &el.MaxAttempts,
+); err != nil {
+return nil, fmt.Errorf("db: scan expired lease: %w", err)
+}
+leases = append(leases, el)
+}
+if err := rows.Err(); err != nil {
+return nil, fmt.Errorf("db: expired leases rows: %w", err)
+}
+return leases, nil
+}
+
+// GetQueuedSteps returns all step_executions with status = 'QUEUED'.
+func (d *DB) GetQueuedSteps(ctx context.Context) ([]StepExecution, error) {
+rows, err := d.pool.Query(ctx, `
+SELECT id, run_id, step_name, step_type, status,
+       attempt_count, max_attempts, idempotency_key,
+       input, output, COALESCE(error_msg, ''),
+       scheduled_after, started_at, completed_at
+FROM step_executions
+WHERE status = 'QUEUED'
+`)
+if err != nil {
+return nil, fmt.Errorf("db: get queued steps: %w", err)
+}
+defer rows.Close()
+return scanStepRows(rows)
 }
