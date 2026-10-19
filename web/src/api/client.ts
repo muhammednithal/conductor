@@ -1,4 +1,4 @@
-﻿const BASE = "/api";
+const BASE = "/api";
 
 let _token: string | null = null;
 
@@ -30,11 +30,14 @@ export const api = {
     request<{ id: string }>(`/workflows/${workflowId}/runs`, { method: "POST", body: JSON.stringify({ input }) }),
 
   listWorkflows: () => request<Workflow[]>("/workflows"),
+  createWorkflow: (name: string, description: string | null, dagDefinition: object) =>
+    request<Workflow>("/workflows", { method: "POST", body: JSON.stringify({ name, description, dag_definition: dagDefinition }) }),
+
   listWorkers: () => request<Worker[]>("/workers"),
 };
 
-export interface Workflow { id: string; name: string; description: string | null; created_at: string; }
+export interface Workflow { id: string; name: string; description: string | null; dag_definition: object; created_at: string; }
 export interface Run { id: string; workflow_id: string; status: string; started_at: string; completed_at: string | null; }
-export interface StepExecution { id: string; step_name: string; step_type: string; status: string; attempt_count: number; error_msg: string | null; }
+export interface StepExecution { id: string; step_name: string; step_type: string; status: string; attempt_count: number; error_msg: string | null; output?: string | null; }
 export interface RunDetail extends Run { step_executions: StepExecution[]; }
 export interface Worker { id: string; hostname: string; status: string; capacity: number; last_heartbeat_at: string; }
