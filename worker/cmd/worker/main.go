@@ -1,4 +1,4 @@
-package main
+﻿package main
 
 import (
 	"context"
@@ -35,6 +35,8 @@ func main() {
 	reg.Register("http", executor.NewHTTPExecutor())
 	reg.Register("transform", &executor.TransformExecutor{})
 	reg.Register("delay", &executor.DelayExecutor{})
+reg.Register("summarize", executor.NewAIExecutor("/ai/summarize"))
+reg.Register("embed", executor.NewAIExecutor("/ai/embed"))
 
 	// --- gRPC client ---
 	client, err := grpcclient.New(orchestratorAddr, workerID, hostname, reg)
