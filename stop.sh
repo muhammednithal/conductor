@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # stop.sh - Kill all Conductor services
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 pkill -f "$ROOT/orchestrator/bin/orchestrator" 2>/dev/null && echo "stopped orchestrator" || true
