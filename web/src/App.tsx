@@ -165,13 +165,13 @@ function Layout({ children }: { children: React.ReactNode }) {
 
       <SidebarWithLogout />
 
-      {/* Main content — explicit background so nothing bleeds through */}
+      {/* Main content â€” explicit background so nothing bleeds through */}
       <Box component="main" sx={{
         flexGrow: 1,
         mt: "64px",
-        ml: `${DRAWER_WIDTH}px`,
+        
         minHeight: "calc(100vh - 64px)",
-        background: BG,    // ← hardcoded, no theme token
+        background: BG,    // â† hardcoded, no theme token
         overflow: "hidden",
       }}>
         {children}
