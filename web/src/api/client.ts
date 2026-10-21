@@ -12,6 +12,12 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (_token) headers["Authorization"] = `Bearer ${_token}`;
   const res = await fetch(`${BASE}${path}`, { ...options, headers });
   if (!res.ok) {
+    // Auto-logout on expired/invalid token
+    if (res.status === 401) {
+      localStorage.removeItem("conductor_token");
+      window.location.href = "/login";
+      throw new Error("Session expired — please sign in again");
+    }
     let msg = `HTTP ${res.status}`;
     try { const j = await res.json(); msg = j.detail ?? JSON.stringify(j); } catch { /* ignore */ }
     throw new Error(msg);
