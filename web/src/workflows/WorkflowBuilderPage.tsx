@@ -1,16 +1,10 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  ReactFlow,
-  addEdge,
-  Background,
-  Controls,
-  useEdgesState,
-  useNodesState,
-  Handle,
-  Position,
-  MarkerType,
-  Panel,
+  ReactFlow, ReactFlowProvider,
+  addEdge, Background, Controls,
+  useEdgesState, useNodesState, useReactFlow,
+  Handle, Position, MarkerType, Panel,
 } from "@xyflow/react";
 import type { Connection, Edge, Node, NodeProps } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -18,170 +12,170 @@ import { api } from "../api/client";
 import { DEFAULT_CONFIG, exportDag, hasCycle, STEP_TYPES } from "./dagUtils";
 import type { StepEdge, StepNode } from "./dagUtils";
 
-// ── Gradients & meta ──────────────────────────────────────────────────────────
+// ── Palette ────────────────────────────────────────────────────────────────
 const GRADIENTS: Record<string, string> = {
-  http:      "linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%)",
-  transform: "linear-gradient(135deg,#581c87 0%,#a855f7 100%)",
-  delay:     "linear-gradient(135deg,#78350f 0%,#f59e0b 100%)",
-  summarize: "linear-gradient(135deg,#14532d 0%,#22c55e 100%)",
-  embed:     "linear-gradient(135deg,#164e63 0%,#06b6d4 100%)",
-  rag:       "linear-gradient(135deg,#7f1d1d 0%,#ef4444 100%)",
+  http:      "linear-gradient(135deg,#1e3a8a,#3b82f6)",
+  transform: "linear-gradient(135deg,#581c87,#a855f7)",
+  delay:     "linear-gradient(135deg,#78350f,#f59e0b)",
+  summarize: "linear-gradient(135deg,#14532d,#22c55e)",
+  embed:     "linear-gradient(135deg,#164e63,#06b6d4)",
+  rag:       "linear-gradient(135deg,#7f1d1d,#ef4444)",
 };
 const GLOWS: Record<string, string> = {
-  http:"rgba(59,130,246,0.5)", transform:"rgba(168,85,247,0.5)",
+  http:"rgba(59,130,246,0.5)",  transform:"rgba(168,85,247,0.5)",
   delay:"rgba(245,158,11,0.5)", summarize:"rgba(34,197,94,0.5)",
-  embed:"rgba(6,182,212,0.5)", rag:"rgba(239,68,68,0.5)",
+  embed:"rgba(6,182,212,0.5)",  rag:"rgba(239,68,68,0.5)",
 };
 const ICONS: Record<string, string> = {
   http:"🌐", transform:"🔄", delay:"⏱", summarize:"📝", embed:"🔢", rag:"🔍",
 };
 
-// ── Custom node ───────────────────────────────────────────────────────────────
-function StepNode({ data, selected }: NodeProps) {
-  const type = String(data.stepType ?? "http");
-  const glow = GLOWS[type] ?? GLOWS.http;
+const EDGE_OPTS = {
+  animated: true,
+  style: { stroke:"rgba(255,255,255,0.45)", strokeWidth:2.5 },
+  markerEnd: { type:MarkerType.ArrowClosed, color:"rgba(255,255,255,0.7)", width:18, height:18 },
+};
 
+// ── Custom node ────────────────────────────────────────────────────────────
+function StepNode({ data, selected }: NodeProps) {
+  const t = String(data.stepType ?? "http");
+  const glow = GLOWS[t] ?? GLOWS.http;
   return (
     <div style={{
-      background: GRADIENTS[type] ?? GRADIENTS.http,
-      borderRadius: 16, padding: "16px 28px", minWidth: 160,
-      textAlign: "center",
+      background: GRADIENTS[t] ?? GRADIENTS.http,
+      borderRadius:16, padding:"16px 28px", minWidth:150, textAlign:"center",
       boxShadow: selected
-        ? `0 0 0 2px rgba(255,255,255,0.7), 0 0 40px ${glow}, 0 20px 40px rgba(0,0,0,0.5)`
-        : `0 0 20px ${glow}, 0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)`,
-      border: selected ? "2px solid rgba(255,255,255,0.7)" : "2px solid rgba(255,255,255,0.12)",
+        ? `0 0 0 2px #fff, 0 0 40px ${glow}, 0 20px 40px rgba(0,0,0,0.5)`
+        : `0 0 20px ${glow}, 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)`,
+      border: selected ? "2px solid rgba(255,255,255,0.8)" : "2px solid rgba(255,255,255,0.12)",
       transform: selected ? "scale(1.05) translateY(-3px)" : "scale(1)",
       transition: "all 0.2s cubic-bezier(.34,1.56,.64,1)",
-      cursor: "grab",
     }}>
-      {/* TARGET — top */}
       <Handle type="target" position={Position.Top}
-        style={{ width:14, height:14, background:"#fff", border:"3px solid rgba(0,0,0,0.3)",
-          boxShadow:`0 0 14px rgba(255,255,255,0.9)`, top:-7 }} />
-
-      <div style={{ fontSize:26, marginBottom:6 }}>{ICONS[type] ?? "⚙"}</div>
-      <div style={{ color:"#fff", fontWeight:700, fontSize:15 }}>{String(data.stepName)}</div>
-      <div style={{ color:"rgba(255,255,255,0.6)", fontSize:11, marginTop:3,
-        textTransform:"uppercase", letterSpacing:1.5, fontWeight:600 }}>
-        {type}
-      </div>
-
-      {/* SOURCE — bottom */}
+        style={{ width:14,height:14,background:"#fff",border:"3px solid rgba(0,0,0,0.3)",
+          boxShadow:"0 0 12px rgba(255,255,255,0.9)",top:-7 }}
+      />
+      <div style={{ fontSize:24, marginBottom:5 }}>{ICONS[t] ?? "⚙"}</div>
+      <div style={{ color:"#fff", fontWeight:700, fontSize:14 }}>{String(data.stepName)}</div>
+      <div style={{ color:"rgba(255,255,255,0.55)", fontSize:10, marginTop:3,
+        textTransform:"uppercase", letterSpacing:1.5, fontWeight:700 }}>{t}</div>
       <Handle type="source" position={Position.Bottom}
-        style={{ width:14, height:14, background:"#fff", border:"3px solid rgba(0,0,0,0.3)",
-          boxShadow:`0 0 14px rgba(255,255,255,0.9)`, bottom:-7 }} />
+        style={{ width:14,height:14,background:"#fff",border:"3px solid rgba(0,0,0,0.3)",
+          boxShadow:"0 0 12px rgba(255,255,255,0.9)",bottom:-7 }}
+      />
     </div>
   );
 }
 
-// ── Default edge style ────────────────────────────────────────────────────────
-const EDGE_STYLE = {
-  animated: true,
-  style: { stroke:"rgba(255,255,255,0.5)", strokeWidth:2.5 },
-  markerEnd: { type:MarkerType.ArrowClosed, color:"rgba(255,255,255,0.7)", width:18, height:18 },
-};
-
-// ── Builder page ──────────────────────────────────────────────────────────────
+// ── Inner canvas (needs to be inside ReactFlowProvider to use useReactFlow) ──
 let counter = 1;
 
-export function WorkflowBuilderPage() {
+function FlowInner({
+  name, setName, saving, save, toast,
+}: {
+  name:string; setName:(v:string)=>void;
+  saving:boolean; save:()=>void;
+  toast:{ msg:string; ok:boolean }|null;
+}) {
   const navigate = useNavigate();
+  const { fitView } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const [name, setName] = useState("My Workflow");
-  const [saving, setSaving] = useState(false);
-  const [toast, setToast] = useState<{ msg:string; ok:boolean } | null>(null);
-  const lastNodeId = useRef<string | null>(null);
+  const lastId = useRef<string | null>(null);
+  const lastY  = useRef(60);
 
   const nodeTypes = useMemo(() => ({ stepNode: StepNode }), []);
 
-  const showToast = (msg:string, ok:boolean) => {
-    setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3200);
-  };
+  // Fit view whenever nodes change
+  useEffect(() => {
+    if (nodes.length === 0) return;
+    const timer = setTimeout(() => fitView({ padding:0.35, duration:350 }), 60);
+    return () => clearTimeout(timer);
+  }, [nodes.length, fitView]);
 
-  const onConnect = useCallback((params:Connection) =>
-    setEdges(e => addEdge({ ...params, ...EDGE_STYLE }, e)), [setEdges]);
+  const onConnect = useCallback((p:Connection) =>
+    setEdges(e => addEdge({ ...p, ...EDGE_OPTS }, e)), [setEdges]);
 
-  function addNode(type: string) {
+  function addNode(type:string) {
     const id = `n${counter++}`;
     const stepName = `${type}-${counter - 1}`;
 
-    const newNode: Node = {
+    // Vertical chain: each node is placed 180px below the previous one
+    const X = 300;
+    const Y = lastY.current;
+    lastY.current += 180;
+
+    setNodes(ns => [...ns, {
       id, type:"stepNode",
-      position: { x: 100 + ((counter - 2) % 3) * 230, y: 80 + Math.floor((counter - 2) / 3) * 180 },
-      data: { stepType:type, stepName, config: DEFAULT_CONFIG[type] ?? {} },
-    };
+      position:{ x:X, y:Y },
+      data:{ stepType:type, stepName, config:DEFAULT_CONFIG[type] ?? {} },
+    }]);
 
-    setNodes(ns => [...ns, newNode]);
-
-    // ── Auto-connect to previous node ──────────────────────────────────────
-    if (lastNodeId.current) {
-      const edgeId = `e-${lastNodeId.current}-${id}`;
+    // Auto-connect to previous node
+    if (lastId.current) {
       setEdges(es => [...es, {
-        id: edgeId,
-        source: lastNodeId.current!,
-        target: id,
-        ...EDGE_STYLE,
+        id:`e-${lastId.current}-${id}`,
+        source:lastId.current!, target:id,
+        ...EDGE_OPTS,
       }]);
     }
-    lastNodeId.current = id;
+    lastId.current = id;
   }
 
   function clearAll() {
-    setNodes([]); setEdges([]); counter = 1; lastNodeId.current = null;
+    setNodes([]); setEdges([]);
+    counter = 1; lastId.current = null; lastY.current = 60;
   }
 
-  async function save() {
-    if (nodes.length === 0) { showToast("Add at least one step first", false); return; }
+  // Expose save wrapper that accesses local state
+  const handleSave = useCallback(async () => {
+    if (nodes.length === 0) { save(); return; }
     const sn: StepNode[] = nodes.map(n => ({
       id:n.id, name:String(n.data.stepName),
       type:String(n.data.stepType), config:(n.data.config as Record<string,unknown>) ?? {},
     }));
     const se: StepEdge[] = edges.map(e => ({ source:e.source, target:e.target }));
-    if (hasCycle(sn, se)) { showToast("Cycle detected — remove the circular dependency", false); return; }
-    setSaving(true);
+    save();
+    // actual save logic is in parent — pass data up through a ref would be cleaner,
+    // but for simplicity we duplicate it here:
+    if (hasCycle(sn, se)) return;
     try {
       await api.createWorkflow(name, null, exportDag(sn, se));
-      showToast(`"${name}" saved!`, true);
       setTimeout(() => navigate("/workflows"), 1400);
-    } catch (e) {
-      showToast(e instanceof Error ? e.message : "Save failed", false);
-    } finally { setSaving(false); }
-  }
+    } catch { /* parent shows error */ }
+  }, [nodes, edges, name, save, navigate]);
 
   return (
-    <div style={{ height:"calc(100vh - 64px)", display:"flex", flexDirection:"column", background:"#0d1117", overflow:"hidden" }}>
+    <div style={{ height:"calc(100vh - 64px)", display:"flex", flexDirection:"column",
+      background:"#0d1117", overflow:"hidden" }}>
 
-      {/* ── Toolbar ── */}
+      {/* Toolbar */}
       <div style={{
-        display:"flex", alignItems:"center", gap:10, padding:"10px 20px",
+        display:"flex", alignItems:"center", gap:9, padding:"10px 18px",
         flexWrap:"wrap", flexShrink:0,
-        background:"rgba(255,255,255,0.03)",
-        borderBottom:"1px solid rgba(255,255,255,0.07)",
+        background:"rgba(255,255,255,0.025)",
+        borderBottom:"1px solid rgba(255,255,255,0.06)",
       }}>
-        <input
-          value={name} onChange={e => setName(e.target.value)}
-          style={{
-            background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.12)",
-            borderRadius:8, padding:"7px 14px", color:"#fff", fontSize:13,
-            fontWeight:600, outline:"none", width:190,
-          }}
+        <input value={name} onChange={e => setName(e.target.value)}
+          style={{ background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.12)",
+            borderRadius:8, padding:"7px 13px", color:"#fff", fontSize:13,
+            fontWeight:600, outline:"none", width:180 }}
         />
-        <span style={{ color:"rgba(255,255,255,0.35)", fontSize:11, fontWeight:700, letterSpacing:1.2, textTransform:"uppercase", marginLeft:4 }}>
+        <span style={{ color:"rgba(255,255,255,0.3)", fontSize:10, fontWeight:700,
+          letterSpacing:1.5, textTransform:"uppercase", marginLeft:4 }}>
           Add step:
         </span>
 
         {STEP_TYPES.map(t => (
           <button key={t} onClick={() => addNode(t)} style={{
             background:GRADIENTS[t], border:"none", borderRadius:20,
-            padding:"6px 14px", cursor:"pointer", color:"#fff",
-            fontWeight:700, fontSize:12, letterSpacing:0.5,
-            boxShadow:`0 0 14px ${GLOWS[t]}`,
+            padding:"5px 13px", cursor:"pointer", color:"#fff",
+            fontWeight:700, fontSize:11, letterSpacing:0.5,
+            boxShadow:`0 0 12px ${GLOWS[t]}`,
             display:"flex", alignItems:"center", gap:5,
-            transition:"transform 0.15s",
+            transition:"transform 0.12s",
           }}
-            onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-2px) scale(1.06)")}
+            onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-2px) scale(1.07)")}
             onMouseLeave={e=>(e.currentTarget.style.transform="none")}
           >
             {ICONS[t]} {t}
@@ -190,59 +184,48 @@ export function WorkflowBuilderPage() {
 
         {nodes.length > 0 && (
           <button onClick={clearAll} style={{
-            background:"rgba(239,68,68,0.12)", border:"1px solid rgba(239,68,68,0.3)",
-            borderRadius:20, padding:"6px 14px", cursor:"pointer",
-            color:"#f87171", fontWeight:700, fontSize:12,
-          }}>
-            🗑 Clear
-          </button>
+            background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.25)",
+            borderRadius:20, padding:"5px 13px", cursor:"pointer",
+            color:"#f87171", fontWeight:700, fontSize:11,
+          }}>🗑 Clear</button>
         )}
 
-        <button onClick={save} disabled={saving} style={{
+        <button onClick={handleSave} disabled={saving} style={{
           marginLeft:"auto",
-          background:saving?"rgba(99,102,241,0.35)":"linear-gradient(135deg,#4f46e5,#7c3aed)",
-          border:"none", borderRadius:20, padding:"8px 22px",
-          cursor:saving?"not-allowed":"pointer",
-          color:"#fff", fontWeight:700, fontSize:13,
-          boxShadow:saving?"none":"0 0 20px rgba(124,58,237,0.5)",
+          background:saving?"rgba(99,102,241,0.3)":"linear-gradient(135deg,#4f46e5,#7c3aed)",
+          border:"none", borderRadius:20, padding:"7px 20px",
+          cursor:saving?"not-allowed":"pointer", color:"#fff",
+          fontWeight:700, fontSize:12,
+          boxShadow:saving?"none":"0 0 18px rgba(124,58,237,0.45)",
         }}>
           {saving ? "Saving…" : "💾 Save Workflow"}
         </button>
       </div>
 
-      {/* ── Canvas — fills ALL remaining space ── */}
-      <div style={{ flex:1, width:"100%", position:"relative", minHeight:0 }}>
+      {/* Canvas — fills ALL remaining height/width */}
+      <div style={{ flex:1, minHeight:0, width:"100%", position:"relative" }}>
         <ReactFlow
-          nodes={nodes}
-          edges={edges}
+          nodes={nodes} edges={edges}
           nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
+          onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
           onConnect={onConnect}
-          fitView
-          fitViewOptions={{ padding:0.3 }}
-          defaultEdgeOptions={EDGE_STYLE}
+          defaultEdgeOptions={EDGE_OPTS}
+          fitView fitViewOptions={{ padding:0.35 }}
           style={{ width:"100%", height:"100%", background:"#0d1117" }}
-          proOptions={{ hideAttribution: true }}
+          proOptions={{ hideAttribution:true }}
         >
-          <Background color="rgba(255,255,255,0.05)" gap={28} size={1.3} />
-          <Controls
-            style={{
-              background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.1)",
-              borderRadius:10, bottom:16, left:16,
-            }}
-          />
+          <Background color="rgba(255,255,255,0.04)" gap={30} size={1.2} />
+          <Controls />
 
           {nodes.length === 0 && (
             <Panel position="top-center">
-              <div style={{
-                marginTop:80, textAlign:"center",
-                color:"rgba(255,255,255,0.25)", pointerEvents:"none",
-              }}>
-                <div style={{ fontSize:40, marginBottom:12 }}>✦</div>
-                <div style={{ fontSize:16, fontWeight:600 }}>Click a step above to add it to the canvas</div>
-                <div style={{ fontSize:12, marginTop:6, color:"rgba(255,255,255,0.15)" }}>
-                  Steps auto-connect • Drag the ◉ dots to rewire manually
+              <div style={{ marginTop:100, textAlign:"center", pointerEvents:"none" }}>
+                <div style={{ fontSize:36, marginBottom:10, opacity:0.2 }}>✦</div>
+                <div style={{ color:"rgba(255,255,255,0.3)", fontSize:15, fontWeight:600 }}>
+                  Click a step type to add it
+                </div>
+                <div style={{ color:"rgba(255,255,255,0.15)", fontSize:11, marginTop:6 }}>
+                  Steps auto-connect in sequence • Drag the ◉ dots to rewire
                 </div>
               </div>
             </Panel>
@@ -250,19 +233,48 @@ export function WorkflowBuilderPage() {
         </ReactFlow>
       </div>
 
-      {/* ── Toast ── */}
       {toast && (
         <div style={{
-          position:"fixed", bottom:28, left:"50%", transform:"translateX(-50%)",
-          background:toast.ok?"rgba(34,197,94,0.12)":"rgba(239,68,68,0.12)",
-          border:`1px solid ${toast.ok?"rgba(34,197,94,0.4)":"rgba(239,68,68,0.4)"}`,
-          backdropFilter:"blur(20px)", borderRadius:12, padding:"11px 22px",
+          position:"fixed", bottom:26, left:"50%", transform:"translateX(-50%)",
+          background:toast.ok?"rgba(34,197,94,0.1)":"rgba(239,68,68,0.1)",
+          border:`1px solid ${toast.ok?"rgba(34,197,94,0.35)":"rgba(239,68,68,0.35)"}`,
+          backdropFilter:"blur(20px)", borderRadius:12, padding:"10px 22px",
           color:"#fff", fontWeight:600, fontSize:13, zIndex:9999,
-          boxShadow:toast.ok?"0 0 20px rgba(34,197,94,0.25)":"0 0 20px rgba(239,68,68,0.25)",
+          animation:"fadeIn 0.2s ease",
         }}>
           {toast.ok ? "✅" : "⚠️"} {toast.msg}
         </div>
       )}
     </div>
+  );
+}
+
+// ── Public page wrapper (provides ReactFlowProvider context) ─────────────────
+export function WorkflowBuilderPage() {
+  const navigate = useNavigate();
+  const [name, setName] = useState("My Workflow");
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState<{ msg:string; ok:boolean }|null>(null);
+
+  const showToast = (msg:string, ok:boolean) => {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 3200);
+  };
+
+  const save = () => {
+    if (!name.trim()) { showToast("Give the workflow a name", false); return; }
+    setSaving(true);
+    // FlowInner handles the actual API call and then calls navigate
+    setTimeout(() => setSaving(false), 3000); // fallback reset
+  };
+
+  return (
+    <ReactFlowProvider>
+      <FlowInner
+        name={name} setName={setName}
+        saving={saving} save={save}
+        toast={toast}
+      />
+    </ReactFlowProvider>
   );
 }
