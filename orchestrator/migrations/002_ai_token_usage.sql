@@ -1,4 +1,4 @@
-﻿-- 002_ai_token_usage.sql: token usage tracking for cost reporting
+-- 002_ai_token_usage.sql: token usage tracking for cost reporting
 
 CREATE TABLE IF NOT EXISTS ai_token_usage (
     id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),

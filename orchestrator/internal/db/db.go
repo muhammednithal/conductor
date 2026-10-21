@@ -1,4 +1,4 @@
-﻿package db
+package db
 
 import (
 	"context"
@@ -338,9 +338,9 @@ func (d *DB) UpdateWorkerStatus(ctx context.Context, workerID, status string) er
 // InsertLease inserts a new lease row.
 func (d *DB) InsertLease(ctx context.Context, l Lease) error {
 	_, err := d.pool.Exec(ctx, `
-		INSERT INTO leases (id, step_execution_id, worker_id, acquired_at, expires_at, renewed_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
-	`, l.ID, l.StepExecutionID, l.WorkerID, l.AcquiredAt, l.ExpiresAt, l.RenewedAt)
+		INSERT INTO leases (step_execution_id, worker_id, acquired_at, expires_at, renewed_at)
+VALUES ($1, $2, $3, $4, $5)
+	`, l.StepExecutionID, l.WorkerID, l.AcquiredAt, l.ExpiresAt, l.RenewedAt)
 	if err != nil {
 		return fmt.Errorf("db: insert lease for step %s: %w", l.StepExecutionID, err)
 	}
