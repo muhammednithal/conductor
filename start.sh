@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# start.sh — Start all Conductor services (Git Bash / Linux / macOS)
+# start.sh â€” Start all Conductor services (Git Bash / Linux / macOS)
 # Usage: bash start.sh
 # Press Ctrl+C to stop all services.
 
@@ -9,12 +9,12 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 LOGS="$ROOT/.logs"
 mkdir -p "$LOGS"
 
-# ── Colour helpers ────────────────────────────────────────────────────────────
+# â”€â”€ Colour helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 cyan()  { echo -e "\033[36m[Conductor] $*\033[0m"; }
 green() { echo -e "\033[32m[  OK  ] $*\033[0m"; }
 red()   { echo -e "\033[31m[ FAIL ] $*\033[0m"; }
 
-# ── Find go binary ────────────────────────────────────────────────────────────
+# â”€â”€ Find go binary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if command -v go &>/dev/null; then
   GO="go"
 elif [ -f "/c/Program Files/Go/bin/go" ]; then
@@ -22,11 +22,11 @@ elif [ -f "/c/Program Files/Go/bin/go" ]; then
 elif [ -f "/usr/local/go/bin/go" ]; then
   GO="/usr/local/go/bin/go"
 else
-  red "go not found — install from https://go.dev/dl/"
+  red "go not found â€” install from https://go.dev/dl/"
   exit 1
 fi
 
-# ── Build Go binaries ─────────────────────────────────────────────────────────
+# â”€â”€ Build Go binaries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 cyan "Building orchestrator..."
 (cd "$ROOT/orchestrator" && "$GO" build -o bin/orchestrator ./cmd/orchestrator) || {
   red "Orchestrator build failed"; exit 1
@@ -39,10 +39,10 @@ cyan "Building worker..."
 }
 green "Worker built"
 
-# ── Start Docker infrastructure ───────────────────────────────────────────────
+# â”€â”€ Start Docker infrastructure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 cyan "Starting Docker infrastructure (Postgres + Redis)..."
 docker compose -f "$ROOT/deploy/docker-compose-infra.yml" up -d || {
-  red "Docker failed — is Docker Desktop running?"
+  red "Docker failed â€” is Docker Desktop running?"
   exit 1
 }
 
@@ -55,7 +55,7 @@ for i in $(seq 1 30); do
 done
 green "Infrastructure ready"
 
-# ── PIDs array for cleanup ─────────────────────────────────────────────────────
+# â”€â”€ PIDs array for cleanup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 PIDS=()
 
 cleanup() {
@@ -70,35 +70,35 @@ cleanup() {
 }
 trap cleanup SIGINT SIGTERM
 
-# ── Orchestrator ──────────────────────────────────────────────────────────────
+# â”€â”€ Orchestrator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 cyan "Starting Orchestrator on :9000..."
 export DATABASE_URL="postgres://conductor:conductor@localhost:5432/conductor"
 export REDIS_ADDR="localhost:6379"
-export MIGRATIONS_DIR="migrations"
+export MIGRATIONS_DIR="$ROOT/orchestrator/migrations"
 
-"$ROOT/orchestrator/bin/orchestrator" \
+(cd "$ROOT/orchestrator" && ./bin/orchestrator) \
   2>"$LOGS/orchestrator.log" &
 PIDS+=($!)
 sleep 5
 
 if ! kill -0 "${PIDS[-1]}" 2>/dev/null; then
-  red "Orchestrator crashed — check $LOGS/orchestrator.log"
+  red "Orchestrator crashed â€” check $LOGS/orchestrator.log"
   cat "$LOGS/orchestrator.log"
   exit 1
 fi
 green "Orchestrator running (PID ${PIDS[-1]})"
 
-# ── Worker ────────────────────────────────────────────────────────────────────
+# â”€â”€ Worker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 cyan "Starting Worker..."
 export ORCHESTRATOR_ADDR=":9000"
 
-"$ROOT/worker/bin/worker" \
+(cd "$ROOT/worker" && ./bin/worker) \
   2>"$LOGS/worker.log" &
 PIDS+=($!)
 sleep 2
 green "Worker running (PID ${PIDS[-1]})"
 
-# ── api-ai ────────────────────────────────────────────────────────────────────
+# â”€â”€ api-ai â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 cyan "Starting api-ai on :8000..."
 export DATABASE_URL="postgresql://conductor:conductor@localhost:5432/conductor"
 export REDIS_URL="redis://localhost:6379"
@@ -111,13 +111,13 @@ PIDS+=($!)
 sleep 4
 
 if ! kill -0 "${PIDS[-1]}" 2>/dev/null; then
-  red "api-ai crashed — check $LOGS/api-ai.log"
+  red "api-ai crashed â€” check $LOGS/api-ai.log"
   cat "$LOGS/api-ai.log"
   exit 1
 fi
 green "api-ai running (PID ${PIDS[-1]})"
 
-# ── Web dashboard (Vite) ──────────────────────────────────────────────────────
+# â”€â”€ Web dashboard (Vite) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 cyan "Starting Web dashboard on :3000..."
 (cd "$ROOT/web" && node node_modules/vite/bin/vite.js --port 3000) \
   >"$LOGS/web.log" 2>&1 &
@@ -125,10 +125,10 @@ PIDS+=($!)
 sleep 3
 green "Web running (PID ${PIDS[-1]})"
 
-# ── Summary ───────────────────────────────────────────────────────────────────
+# â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 echo ""
 echo -e "\033[32m==================================================\033[0m"
-echo -e "\033[32m  🎼 Conductor is running!\033[0m"
+echo -e "\033[32m  ðŸŽ¼ Conductor is running!\033[0m"
 echo ""
 echo -e "\033[36m  Dashboard : http://localhost:3000\033[0m"
 echo -e "\033[36m  API docs  : http://localhost:8000/docs\033[0m"
@@ -138,5 +138,5 @@ echo -e "\033[33m  Ctrl+C to stop all services\033[0m"
 echo -e "\033[32m==================================================\033[0m"
 echo ""
 
-# ── Block until Ctrl+C ────────────────────────────────────────────────────────
+# â”€â”€ Block until Ctrl+C â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 wait
