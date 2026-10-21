@@ -1,77 +1,67 @@
-﻿package main
+package main
 
 import (
-	"context"
-	"crypto/rand"
-	"encoding/hex"
-	"fmt"
-	"log"
-	"os"
-	"os/signal"
-	"syscall"
+"context"
+"crypto/sha256"
+"fmt"
+"log"
+"os"
+"os/signal"
+"syscall"
 
-	"github.com/conductor/worker/internal/executor"
-	"github.com/conductor/worker/internal/grpcclient"
+"github.com/conductor/worker/internal/executor"
+"github.com/conductor/worker/internal/grpcclient"
 )
 
 func main() {
-	// --- Configuration from environment ---
-	orchestratorAddr := getEnv("ORCHESTRATOR_ADDR", ":9000")
+orchestratorAddr := getEnv("ORCHESTRATOR_ADDR", ":9000")
 
-	hostname, err := os.Hostname()
-	if err != nil {
-		hostname = "unknown"
-	}
-	hostname = getEnv("WORKER_HOSTNAME", hostname)
+hostname, err := os.Hostname()
+if err != nil {
+hostname = "unknown"
+}
+hostname = getEnv("WORKER_HOSTNAME", hostname)
 
-	workerID := generateID()
+// Deterministic ID based on hostname so restarts UPDATE the same row
+// instead of creating a new one each time.
+workerID := hostnameToID(hostname)
 
-	// --- Root context with signal cancellation ---
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
+ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+defer stop()
 
-	// --- Executor registry ---
-	reg := executor.NewRegistry()
-	reg.Register("http", executor.NewHTTPExecutor())
-	reg.Register("transform", &executor.TransformExecutor{})
-	reg.Register("delay", &executor.DelayExecutor{})
+reg := executor.NewRegistry()
+reg.Register("http", executor.NewHTTPExecutor())
+reg.Register("transform", &executor.TransformExecutor{})
+reg.Register("delay", &executor.DelayExecutor{})
 reg.Register("summarize", executor.NewAIExecutor("/ai/summarize"))
 reg.Register("embed", executor.NewAIExecutor("/ai/embed"))
 
-	// --- gRPC client ---
-	client, err := grpcclient.New(orchestratorAddr, workerID, hostname, reg)
-	if err != nil {
-		log.Fatalf("worker: create grpc client: %v", err)
-	}
-	defer client.Close()
+client, err := grpcclient.New(orchestratorAddr, workerID, hostname, reg)
+if err != nil {
+log.Fatalf("worker: create grpc client: %v", err)
+}
+defer client.Close()
 
-	log.Printf("worker: %s (%s) connecting to orchestrator at %s", workerID, hostname, orchestratorAddr)
+log.Printf("worker: %s (%s) connecting to orchestrator at %s", workerID, hostname, orchestratorAddr)
 
-	if err := client.Run(ctx); err != nil {
-		log.Printf("worker: run: %v", err)
-	}
-	log.Printf("worker: stopped")
+if err := client.Run(ctx); err != nil {
+log.Printf("worker: run: %v", err)
+}
+log.Printf("worker: stopped")
 }
 
 func getEnv(key, defaultVal string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return defaultVal
+if v := os.Getenv(key); v != "" {
+return v
+}
+return defaultVal
 }
 
-// generateID generates a 16-byte random hex string as a worker UUID substitute.
-func generateID() string {
-	b := make([]byte, 16)
-	if _, err := rand.Read(b); err != nil {
-		return fmt.Sprintf("worker-%d", os.Getpid())
-	}
-	// Format as UUID-like string: 8-4-4-4-12
-	return fmt.Sprintf("%s-%s-%s-%s-%s",
-		hex.EncodeToString(b[0:4]),
-		hex.EncodeToString(b[4:6]),
-		hex.EncodeToString(b[6:8]),
-		hex.EncodeToString(b[8:10]),
-		hex.EncodeToString(b[10:16]),
-	)
+// hostnameToID converts a hostname to a stable UUID-shaped ID using SHA-256.
+// The same hostname always produces the same ID, so UpsertWorker updates the
+// existing row rather than inserting a new one on every restart.
+func hostnameToID(hostname string) string {
+h := sha256.Sum256([]byte(hostname))
+return fmt.Sprintf("%x-%x-%x-%x-%x",
+h[0:4], h[4:6], h[6:8], h[8:10], h[10:16])
 }
