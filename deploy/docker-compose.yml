@@ -1,4 +1,6 @@
-﻿services:
+services:
+
+  # ── Infrastructure ────────────────────────────────────────────────────────
 
   postgres:
     image: postgres:16-alpine
@@ -16,7 +18,7 @@
       test: ["CMD-SHELL", "pg_isready -U conductor -d conductor"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -30,7 +32,70 @@
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+  # ── Backend services ───────────────────────────────────────────────────────
+
+  orchestrator:
+    build:
+      context: ..
+      dockerfile: orchestrator/Dockerfile
+    container_name: conductor-orchestrator
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://conductor:conductor@postgres:5432/conductor
+      REDIS_ADDR: redis:6379
+      GRPC_ADDR: ":9000"
+      MIGRATIONS_DIR: migrations
+    ports:
+      - "9000:9000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ..
+      dockerfile: worker/Dockerfile
+    container_name: conductor-worker
+    restart: unless-stopped
+    environment:
+      ORCHESTRATOR_ADDR: orchestrator:9000
+      WORKER_HOSTNAME: docker-worker
+    depends_on:
+      - orchestrator
+
+  api-ai:
+    build:
+      context: ../api-ai
+      dockerfile: Dockerfile
+    container_name: conductor-api-ai
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://conductor:conductor@postgres:5432/conductor
+      REDIS_URL: redis://redis:6379
+      LLM_PROVIDER: mock
+      JWT_SECRET: change-me-in-production
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    container_name: conductor-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-ai
 
 volumes:
   postgres_data:
