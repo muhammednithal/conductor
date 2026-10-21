@@ -1,60 +1,57 @@
 import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  ReactFlow,
-  addEdge,
-  Background,
-  Controls,
-  MiniMap,
-  useEdgesState,
-  useNodesState,
+  ReactFlow, addEdge, Background, Controls, MiniMap,
+  useEdgesState, useNodesState,
 } from "@xyflow/react";
 import type { Connection, Edge, Node } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import {
+  Box, Paper, Button, TextField, Typography,
+  Stack, Chip, Snackbar, Alert, Tooltip,
+} from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { api } from "../api/client";
 import { DEFAULT_CONFIG, exportDag, hasCycle, STEP_TYPES } from "./dagUtils";
 import type { StepEdge, StepNode } from "./dagUtils";
 
 let nodeCounter = 1;
 
-const COLORS: Record<string, string> = {
-  http: "#1a73e8", transform: "#7b1fa2", delay: "#e65100",
-  summarize: "#2e7d32", embed: "#00838f", rag: "#c62828",
+const TYPE_COLORS: Record<string, string> = {
+  http: "#1565c0", transform: "#6a1b9a", delay: "#e65100",
+  summarize: "#2e7d32", embed: "#00695c", rag: "#b71c1c",
+};
+
+const TYPE_ICONS: Record<string, string> = {
+  http: "🌐", transform: "🔄", delay: "⏱", summarize: "📝", embed: "🔢", rag: "🔍",
 };
 
 export function WorkflowBuilderPage() {
+  const navigate = useNavigate();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const [workflowName, setWorkflowName] = useState("New Workflow");
-  const [status, setStatus] = useState("");
-  const [cycleError, setCycleError] = useState(false);
+  const [name, setName] = useState("My Workflow");
+  const [saving, setSaving] = useState(false);
+  const [snack, setSnack] = useState<{ msg: string; severity: "success"|"error"|"warning" } | null>(null);
 
-  const onConnect = useCallback(
-    (params: Connection) => setEdges(eds => addEdge(params, eds)),
-    [setEdges],
-  );
+  const onConnect = useCallback((p: Connection) => setEdges(e => addEdge(p, e)), [setEdges]);
 
-  function addStepNode(type: string) {
-    const id = `node-${nodeCounter++}`;
-    const name = `${type}-${id.split("-")[1]}`;
-    const newNode: Node = {
+  function addNode(type: string) {
+    const id = `n${nodeCounter++}`;
+    const stepName = `${type}-${nodeCounter - 1}`;
+    const node: Node = {
       id,
-      position: { x: 80 + (nodes.length % 3) * 200, y: 80 + Math.floor(nodes.length / 3) * 120 },
-      data: {
-        label: `${name}\n(${type})`,
-        stepType: type,
-        stepName: name,
-        config: DEFAULT_CONFIG[type] ?? {},
-      },
+      position: { x: 80 + ((nodeCounter - 2) % 3) * 220, y: 80 + Math.floor((nodeCounter - 2) / 3) * 130 },
+      data: { label: `${TYPE_ICONS[type] ?? ""} ${stepName}`, stepType: type, stepName, config: DEFAULT_CONFIG[type] ?? {} },
       style: {
-        background: COLORS[type] ?? "#555",
-        color: "#fff",
-        borderRadius: 8,
-        padding: "8px 16px",
-        border: "none",
-        fontWeight: 600,
+        background: TYPE_COLORS[type] ?? "#555", color: "#fff",
+        borderRadius: 10, padding: "10px 18px", fontWeight: 700,
+        fontSize: 13, border: "none", boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
+        minWidth: 140, textAlign: "center",
       },
     };
-    setNodes(nds => [...nds, newNode]);
+    setNodes(ns => [...ns, node]);
   }
 
   function buildStepData(): [StepNode[], StepEdge[]] {
@@ -69,69 +66,87 @@ export function WorkflowBuilderPage() {
   }
 
   async function saveWorkflow() {
-    setCycleError(false);
-    const [stepNodes, stepEdges] = buildStepData();
-
-    if (hasCycle(stepNodes, stepEdges)) {
-      setCycleError(true);
-      setStatus("Error: DAG contains a cycle — remove circular dependencies before saving.");
+    if (nodes.length === 0) {
+      setSnack({ msg: "Add at least one step before saving.", severity: "warning" });
       return;
     }
-
-    const dagDef = exportDag(stepNodes, stepEdges);
+    const [stepNodes, stepEdges] = buildStepData();
+    if (hasCycle(stepNodes, stepEdges)) {
+      setSnack({ msg: "Cycle detected — remove the circular dependency.", severity: "error" });
+      return;
+    }
+    setSaving(true);
     try {
-      setStatus("Saving…");
-      await api.createWorkflow(workflowName, null, dagDef);
-      setStatus("✓ Workflow saved successfully.");
+      await api.createWorkflow(name, null, exportDag(stepNodes, stepEdges));
+      setSnack({ msg: `"${name}" saved!`, severity: "success" });
+      setTimeout(() => navigate("/workflows"), 1200);
     } catch (e) {
-      setStatus(`Error saving: ${e}`);
+      setSnack({ msg: `Save failed: ${e instanceof Error ? e.message : e}`, severity: "error" });
+    } finally {
+      setSaving(false);
     }
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "calc(100vh - 48px)" }}>
+    <Box sx={{ height: "calc(100vh - 64px)", display: "flex", flexDirection: "column" }}>
       {/* Toolbar */}
-      <div style={{ padding: "8px 16px", background: "#f5f5f5", borderBottom: "1px solid #ddd", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-        <input
-          value={workflowName}
-          onChange={e => setWorkflowName(e.target.value)}
-          style={{ padding: "4px 8px", fontWeight: 600, width: 200 }}
+      <Paper elevation={2} sx={{ px: 2, py: 1.5, display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap", zIndex: 10 }}>
+        <TextField
+          value={name} onChange={e => setName(e.target.value)}
+          size="small" label="Workflow name" sx={{ width: 220 }}
         />
-        <span style={{ color: "#666", fontSize: 12 }}>Add step:</span>
+        <Typography variant="body2" color="text.secondary" sx={{ mx: 1 }}>Add step:</Typography>
         {STEP_TYPES.map(t => (
-          <button
-            key={t}
-            onClick={() => addStepNode(t)}
-            style={{ background: COLORS[t], color: "#fff", border: "none", borderRadius: 4, padding: "4px 10px", cursor: "pointer", fontSize: 12 }}
-          >
-            + {t}
-          </button>
+          <Tooltip key={t} title={`Add ${t} step`}>
+            <Chip
+              label={`${TYPE_ICONS[t] ?? ""} ${t}`}
+              onClick={() => addNode(t)}
+              clickable
+              sx={{ bgcolor: TYPE_COLORS[t], color: "#fff", fontWeight: 700, "&:hover": { opacity: 0.85 } }}
+            />
+          </Tooltip>
         ))}
-        <button onClick={saveWorkflow} style={{ marginLeft: "auto", padding: "4px 16px", fontWeight: 700, cursor: "pointer" }}>
-          Save Workflow
-        </button>
-      </div>
+        {nodes.length > 0 && (
+          <Tooltip title="Clear canvas">
+            <Button size="small" color="error" startIcon={<DeleteIcon />}
+              onClick={() => { setNodes([]); setEdges([]); nodeCounter = 1; }}>
+              Clear
+            </Button>
+          </Tooltip>
+        )}
+        <Button
+          variant="contained" startIcon={<SaveIcon />}
+          onClick={saveWorkflow} disabled={saving}
+          sx={{ ml: "auto" }}
+        >
+          {saving ? "Saving…" : "Save Workflow"}
+        </Button>
+      </Paper>
 
-      {status && (
-        <div style={{ padding: "4px 16px", background: cycleError ? "#ffebee" : "#e8f5e9", fontSize: 13, borderBottom: "1px solid #ddd" }}>
-          {status}
-        </div>
+      {nodes.length === 0 && (
+        <Box sx={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)", textAlign:"center", pointerEvents:"none", zIndex:5 }}>
+          <Typography variant="h6" color="text.disabled">Click a step type above to add it to the canvas</Typography>
+          <Typography variant="body2" color="text.disabled" mt={1}>Connect steps by dragging from one node to another</Typography>
+        </Box>
       )}
 
-      <div style={{ flex: 1 }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          fitView
-        >
-          <Background />
+      {/* Canvas */}
+      <Box sx={{ flex: 1 }}>
+        <ReactFlow nodes={nodes} edges={edges}
+          onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
+          onConnect={onConnect} fitView>
+          <Background color="#e0e0e0" gap={20} />
           <Controls />
-          <MiniMap />
+          <MiniMap nodeStrokeWidth={3} zoomable pannable />
         </ReactFlow>
-      </div>
-    </div>
+      </Box>
+
+      <Snackbar open={!!snack} autoHideDuration={3000} onClose={() => setSnack(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
+        <Alert severity={snack?.severity ?? "info"} onClose={() => setSnack(null)} variant="filled">
+          {snack?.msg}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 }

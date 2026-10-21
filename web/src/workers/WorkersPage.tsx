@@ -1,32 +1,71 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  Box, Card, Typography, Table, TableHead, TableRow,
+  TableCell, TableBody, CircularProgress, Alert,
+  TableContainer, Stack, Chip,
+} from "@mui/material";
 import { api, Worker } from "../api/client";
-import { StatusBadge } from "../components/StatusBadge";
+import { StatusChip } from "../components/StatusChip";
 
 export function WorkersPage() {
   const [workers, setWorkers] = useState<Worker[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const load = () => api.listWorkers().then(setWorkers).catch(e => setError(e.message)).finally(() => setLoading(false));
 
   useEffect(() => {
-    api.listWorkers().then(setWorkers).catch(console.error);
-    const t = setInterval(() => api.listWorkers().then(setWorkers).catch(() => {}), 10_000);
+    load();
+    const t = setInterval(load, 10_000);
     return () => clearInterval(t);
   }, []);
 
+  const online = workers.filter(w => w.status === "ONLINE").length;
+
+  if (loading) return <Box sx={{ display:"flex", justifyContent:"center", mt:8 }}><CircularProgress /></Box>;
+
   return (
-    <div style={{ padding: 24 }}>
-      <h2>Workers</h2>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead><tr><th>Hostname</th><th>Status</th><th>Capacity</th><th>Last Heartbeat</th></tr></thead>
-        <tbody>
-          {workers.map(w => (
-            <tr key={w.id} style={{ borderBottom: "1px solid #eee" }}>
-              <td>{w.hostname}</td>
-              <td><StatusBadge status={w.status} /></td>
-              <td>{w.capacity}</td>
-              <td>{new Date(w.last_heartbeat_at).toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Box sx={{ p: 3 }}>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
+        <Typography variant="h5">Worker Pool</Typography>
+        <Chip label={`${online} online`} color={online > 0 ? "success" : "default"} />
+      </Stack>
+
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      <Card>
+        {workers.length === 0 ? (
+          <Box sx={{ textAlign:"center", py:6 }}>
+            <Typography color="text.secondary">No workers connected. Start a worker with: <code>./bin/worker.exe</code></Typography>
+          </Box>
+        ) : (
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ "& th": { fontWeight:700, bgcolor:"grey.50" } }}>
+                  <TableCell>Hostname</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell>Capacity</TableCell>
+                  <TableCell>Last Heartbeat</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {workers.map(w => (
+                  <TableRow key={w.id} hover>
+                    <TableCell>
+                      <Typography fontWeight={600}>{w.hostname}</Typography>
+                      <Typography variant="caption" color="text.secondary" fontFamily="monospace">{w.id.slice(0,8)}…</Typography>
+                    </TableCell>
+                    <TableCell><StatusChip status={w.status} /></TableCell>
+                    <TableCell>{w.capacity}</TableCell>
+                    <TableCell>{new Date(w.last_heartbeat_at).toLocaleString()}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </Card>
+    </Box>
   );
 }

@@ -1,8 +1,8 @@
 import { describe, it, expect } from "@jest/globals";
 
 describe("status values", () => {
-  it("has correct count", () => {
+  it("has correct statuses", () => {
     const statuses = ["PENDING","QUEUED","RUNNING","SUCCEEDED","FAILED","RETRYING","CANCELED"];
-    expect(statuses.length).toBe(7);
+    expect(statuses).toHaveLength(7);
   });
 });
