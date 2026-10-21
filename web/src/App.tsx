@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, NavLink } from "react-router-do
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import {
   AppBar, Toolbar, Typography, Box, Drawer, List,
-  ListItemButton, ListItemIcon, ListItemText, Avatar, IconButton, Tooltip,
+  ListItemButton, ListItemIcon, ListItemText, Tooltip, IconButton,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
@@ -21,54 +21,83 @@ import { theme } from "./theme";
 const DRAWER_WIDTH = 220;
 
 const NAV_ITEMS = [
-  { label: "Runs",       icon: <DashboardIcon />,    path: "/runs" },
-  { label: "Workflows",  icon: <AccountTreeIcon />,   path: "/workflows" },
-  { label: "Builder",    icon: <BuildIcon />,         path: "/workflows/new" },
-  { label: "Workers",    icon: <DnsIcon />,           path: "/workers" },
+  { label:"Runs",      icon:<DashboardIcon />,   path:"/runs" },
+  { label:"Workflows", icon:<AccountTreeIcon />,  path:"/workflows" },
+  { label:"Builder",   icon:<BuildIcon />,        path:"/workflows/new" },
+  { label:"Workers",   icon:<DnsIcon />,          path:"/workers" },
 ];
 
-function Layout({ children }: { children: React.ReactNode }) {
+function Sidebar() {
   const { logout } = useAuth();
   return (
-    <Box sx={{ display: "flex" }}>
-      {/* Top bar */}
-      <AppBar position="fixed" sx={{ zIndex: t => t.zIndex.drawer + 1, background: "linear-gradient(90deg,#1a237e,#283593)" }}>
+    <Drawer variant="permanent" sx={{
+      width: DRAWER_WIDTH,
+      "& .MuiDrawer-paper": {
+        width: DRAWER_WIDTH, top: 64, height:"calc(100% - 64px)",
+      },
+    }}>
+      <List sx={{ pt: 2, px: 1 }}>
+        {NAV_ITEMS.map(item => (
+          <ListItemButton
+            key={item.path}
+            component={NavLink}
+            to={item.path}
+            end={item.path !== "/workflows/new"}
+            sx={{
+              borderRadius: 2, mb: 0.5, px: 2, py: 1.2,
+              color: "rgba(180,190,220,0.7)",
+              transition: "all 0.2s",
+              "&.active": {
+                background: "linear-gradient(135deg,rgba(79,70,229,0.25),rgba(124,58,237,0.15))",
+                color: "#c4b5fd",
+                border: "1px solid rgba(124,58,237,0.3)",
+                boxShadow: "0 0 16px rgba(124,58,237,0.15)",
+                "& .MuiListItemIcon-root": { color: "#c4b5fd" },
+              },
+              "&:not(.active):hover": {
+                background: "rgba(255,255,255,0.04)",
+                color: "#fff",
+                "& .MuiListItemIcon-root": { color: "#fff" },
+              },
+              "& .MuiListItemIcon-root": { color:"rgba(180,190,220,0.5)", minWidth:36, transition:"color 0.2s" },
+            }}
+          >
+            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemText
+              primary={item.label}
+              primaryTypographyProps={{ fontWeight:600, fontSize:14 }}
+            />
+          </ListItemButton>
+        ))}
+      </List>
+
+      <Box sx={{ mt:"auto", p:2, borderTop:"1px solid rgba(255,255,255,0.06)" }}>
+        <Tooltip title="Sign out" placement="right">
+          <ListItemButton
+            onClick={logout}
+            sx={{ borderRadius:2, color:"rgba(248,113,113,0.7)", "&:hover":{ background:"rgba(239,68,68,0.1)", color:"#f87171" } }}
+          >
+            <ListItemIcon sx={{ minWidth:36, color:"inherit" }}><LogoutIcon fontSize="small" /></ListItemIcon>
+            <ListItemText primary="Sign out" primaryTypographyProps={{ fontSize:13, fontWeight:600 }} />
+          </ListItemButton>
+        </Tooltip>
+      </Box>
+    </Drawer>
+  );
+}
+
+function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <Box sx={{ display:"flex" }}>
+      <AppBar position="fixed" sx={{ zIndex: t => t.zIndex.drawer + 1 }}>
         <Toolbar>
-          <Typography variant="h6" fontWeight={800} letterSpacing={1} sx={{ flexGrow: 1 }}>
-            🎼 Conductor
+          <Typography variant="h6" sx={{ flexGrow:1, fontWeight:800, letterSpacing:2, background:"linear-gradient(90deg,#c4b5fd,#67e8f9)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+            🎼 CONDUCTOR
           </Typography>
-          <Tooltip title="Sign out">
-            <IconButton color="inherit" onClick={logout}><LogoutIcon /></IconButton>
-          </Tooltip>
         </Toolbar>
       </AppBar>
-
-      {/* Side nav */}
-      <Drawer variant="permanent" sx={{
-        width: DRAWER_WIDTH,
-        "& .MuiDrawer-paper": { width: DRAWER_WIDTH, boxSizing: "border-box", top: 64, height: "calc(100% - 64px)", borderRight: "1px solid #e0e0e0" },
-      }}>
-        <List sx={{ pt: 1 }}>
-          {NAV_ITEMS.map(item => (
-            <ListItemButton
-              key={item.path}
-              component={NavLink}
-              to={item.path}
-              end={item.path !== "/workflows/new"}
-              sx={{ borderRadius: 2, mx: 1, mb: 0.5,
-                "&.active": { bgcolor: "primary.main", color: "#fff", "& .MuiListItemIcon-root": { color: "#fff" } },
-                "&:not(.active):hover": { bgcolor: "grey.100" },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: 600, fontSize: 14 }} />
-            </ListItemButton>
-          ))}
-        </List>
-      </Drawer>
-
-      {/* Main content */}
-      <Box component="main" sx={{ flexGrow: 1, mt: "64px", ml: `${DRAWER_WIDTH}px`, minHeight: "calc(100vh - 64px)", bgcolor: "background.default" }}>
+      <Sidebar />
+      <Box component="main" sx={{ flexGrow:1, mt:"64px", ml:`${DRAWER_WIDTH}px`, minHeight:"calc(100vh - 64px)", bgcolor:"background.default" }}>
         {children}
       </Box>
     </Box>
@@ -85,11 +114,11 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={token ? <Navigate to="/runs" replace /> : <LoginPage />} />
-      <Route path="/runs" element={<Protected><RunsListPage /></Protected>} />
-      <Route path="/runs/:id" element={<Protected><RunDetailPage /></Protected>} />
-      <Route path="/workflows" element={<Protected><WorkflowsListPage /></Protected>} />
+      <Route path="/runs"          element={<Protected><RunsListPage /></Protected>} />
+      <Route path="/runs/:id"      element={<Protected><RunDetailPage /></Protected>} />
+      <Route path="/workflows"     element={<Protected><WorkflowsListPage /></Protected>} />
       <Route path="/workflows/new" element={<Protected><WorkflowBuilderPage /></Protected>} />
-      <Route path="/workers" element={<Protected><WorkersPage /></Protected>} />
+      <Route path="/workers"       element={<Protected><WorkersPage /></Protected>} />
       <Route path="*" element={<Navigate to={token ? "/runs" : "/login"} replace />} />
     </Routes>
   );
