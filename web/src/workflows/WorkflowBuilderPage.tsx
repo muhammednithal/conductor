@@ -33,7 +33,7 @@ const GLOWS: Record<string, string> = {
   embed:"rgba(6,182,212,0.45)",rag:"rgba(239,68,68,0.45)",
 };
 const ICONS: Record<string,string> = {
-  http:"🌐",transform:"🔄",delay:"⏱",summarize:"📝",embed:"🔢",rag:"🔍",
+  http:"ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã¢â‚¬â„¢Ãƒâ€šÃ‚Â",transform:"ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾",delay:"ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€šÃ‚Â±",summarize:"ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒâ€šÃ‚Â",embed:"ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â¢",rag:"ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â",
 };
 
 const EDGE_OPTS = {
@@ -92,8 +92,46 @@ function FlowInner({ name, setName, onSave, toast }:{
     return () => clearTimeout(t);
   }, [nodes.length, fitView]);
 
-  const onConnect = useCallback((p:Connection) =>
-    setEdges(e => addEdge({ ...p, ...EDGE_OPTS }, e)), [setEdges]);
+  const onConnect = useCallback((p:Connection) => {
+    // Prevent self-loops
+    if (p.source === p.target) return;
+    // Prevent cycles
+    const tempEdges: StepEdge[] = [
+      ...edges.map(e => ({ source:e.source, target:e.target })),
+      { source:p.source!, target:p.target! },
+    ];
+    const sn: StepNode[] = nodes.map(n => ({
+      id:n.id, name:String(n.data.stepName), type:String(n.data.stepType), config:{},
+    }));
+    if (hasCycle(sn, tempEdges)) return; // silently reject — no cycle allowed
+    setEdges(e => addEdge({ ...p, ...EDGE_OPTS }, e));
+  }, [nodes, edges, setEdges]);
+
+  // When a node is deleted via keyboard (not our button), reset lastId
+  // so the next auto-added node does not connect to a ghost node
+  const handleNodesChange = useCallback((changes: import("@xyflow/react").NodeChange[]) => {
+    changes.forEach(c => {
+      if (c.type === "remove" && c.id === lastId.current) {
+        lastId.current = null;
+      }
+    });
+    onNodesChange(changes);
+  }, [onNodesChange]);
+
+  // Prevent drawing an edge that would create a cycle
+  const isValidConnection = useCallback((conn: Connection) => {
+    if (!conn.source || !conn.target) return false;
+    if (conn.source === conn.target) return false; // no self-loops
+    const tempEdges: StepEdge[] = [
+      ...edges.map(e => ({ source: e.source, target: e.target })),
+      { source: conn.source, target: conn.target },
+    ];
+    const sn: StepNode[] = nodes.map(n => ({
+      id: n.id, name: String(n.data.stepName),
+      type: String(n.data.stepType), config: {},
+    }));
+    return !hasCycle(sn, tempEdges);
+  }, [nodes, edges]);
 
   const onNodeClick: NodeMouseHandler = useCallback((_, node) => {
     setSelected(node);
@@ -190,7 +228,7 @@ function FlowInner({ name, setName, onSave, toast }:{
           <button onClick={() => { setNodes([]); setEdges([]); counter=1; lastId.current=null; lastY.current=60; setSelected(null); }}
             style={{ background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.25)",
               borderRadius:20, padding:"5px 13px", cursor:"pointer",
-              color:"#f87171", fontWeight:700, fontSize:11 }}>🗑 Clear</button>
+              color:"#f87171", fontWeight:700, fontSize:11 }}>ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬ÂÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“ Clear</button>
         )}
         <button onClick={handleSave} disabled={saving || nodes.length===0} style={{
           marginLeft:"auto",
@@ -199,7 +237,7 @@ function FlowInner({ name, setName, onSave, toast }:{
           cursor:(saving||nodes.length===0)?"not-allowed":"pointer",
           color:"#fff", fontWeight:700, fontSize:12,
           boxShadow:(saving||nodes.length===0)?"none":"0 0 18px rgba(124,58,237,0.45)",
-        }}>{saving ? "Saving…" : "💾 Save Workflow"}</button>
+        }}>{saving ? "SavingÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦" : "ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢Ãƒâ€šÃ‚Â¾ Save Workflow"}</button>
       </div>
 
       {/* Canvas + Config panel */}
@@ -208,8 +246,8 @@ function FlowInner({ name, setName, onSave, toast }:{
         <div style={{ flex:1, position:"relative" }}>
           <ReactFlow
             nodes={nodes} edges={edges} nodeTypes={nodeTypes}
-            onNodesChange={onNodesChange} onEdgesChange={onEdgesChange}
-            onConnect={onConnect} onNodeClick={onNodeClick}
+            onNodesChange={handleNodesChange} onEdgesChange={onEdgesChange}
+            onConnect={onConnect} onNodeClick={onNodeClick} 
             onPaneClick={() => setSelected(null)}
             defaultEdgeOptions={EDGE_OPTS}
             fitView fitViewOptions={{ padding:0.35 }}
@@ -221,12 +259,12 @@ function FlowInner({ name, setName, onSave, toast }:{
             {nodes.length === 0 && (
               <Panel position="top-center">
                 <div style={{ marginTop:100, textAlign:"center", pointerEvents:"none" }}>
-                  <div style={{ fontSize:36, opacity:0.15, marginBottom:10 }}>✦</div>
+                  <div style={{ fontSize:36, opacity:0.15, marginBottom:10 }}>ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“Ãƒâ€šÃ‚Â¦</div>
                   <div style={{ color:"rgba(255,255,255,0.3)", fontSize:15, fontWeight:600 }}>
                     Click a step type to add it
                   </div>
                   <div style={{ color:"rgba(255,255,255,0.15)", fontSize:11, marginTop:6 }}>
-                    Steps auto-connect • Click a node to edit its config
+                    Steps auto-connect ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Click a node to edit its config
                   </div>
                 </div>
               </Panel>
@@ -234,7 +272,7 @@ function FlowInner({ name, setName, onSave, toast }:{
           </ReactFlow>
         </div>
 
-        {/* Config panel — slides in when a node is selected */}
+        {/* Config panel ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â slides in when a node is selected */}
         {selected && (
           <Paper elevation={0} sx={{
             width:300, flexShrink:0,
@@ -244,14 +282,14 @@ function FlowInner({ name, setName, onSave, toast }:{
           }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
               <Stack direction="row" alignItems="center" spacing={1}>
-                <span style={{ fontSize:20 }}>{ICONS[String(selected.data.stepType)] ?? "⚙"}</span>
+                <span style={{ fontSize:20 }}>{ICONS[String(selected.data.stepType)] ?? "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢"}</span>
                 <Typography variant="subtitle1" fontWeight={700}>
                   {String(selected.data.stepType)} step
                 </Typography>
               </Stack>
               <button onClick={() => setSelected(null)}
                 style={{ background:"none", border:"none", cursor:"pointer",
-                  color:"rgba(255,255,255,0.4)", fontSize:18 }}>×</button>
+                  color:"rgba(255,255,255,0.4)", fontSize:18 }}>ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</button>
             </Stack>
 
             <Divider sx={{ mb:2, borderColor:"rgba(255,255,255,0.08)" }} />
@@ -306,7 +344,7 @@ function FlowInner({ name, setName, onSave, toast }:{
           backdropFilter:"blur(20px)", borderRadius:12, padding:"10px 22px",
           color:"#fff", fontWeight:600, fontSize:13, zIndex:9999,
         }}>
-          {toast.ok ? "✅" : "⚠️"} {toast.msg}
+          {toast.ok ? "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦" : "ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã‚Â¡Ãƒâ€šÃ‚Â ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¸Ãƒâ€šÃ‚Â"} {toast.msg}
         </div>
       )}
     </div>
@@ -321,7 +359,7 @@ export function WorkflowBuilderPage() {
 
   async function onSave(sn: StepNode[], se: StepEdge[]) {
     if (sn.length === 0) { showToast("Add at least one step first", false); return; }
-    if (hasCycle(sn, se)) { showToast("Cycle detected — remove the circular dependency", false); return; }
+    if (hasCycle(sn, se)) { showToast("Cycle detected ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â remove the circular dependency", false); return; }
     try {
       await api.createWorkflow(name, null, exportDag(sn, se));
       showToast(`"${name}" saved!`, true);
