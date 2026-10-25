@@ -23,30 +23,41 @@ export interface DagDefinition {
   }>;
 }
 
-/** Detect cycles using DFS (WHITE=0, GRAY=1, BLACK=2). */
+/**
+ * Detect cycles using Kahn's topological sort (BFS-based).
+ * If the number of nodes visited equals nodes.length, the graph is acyclic.
+ * Edges referencing unknown node IDs are silently skipped.
+ */
 export function hasCycle(nodes: StepNode[], edges: StepEdge[]): boolean {
+  const inDegree = new Map<string, number>();
   const adj = new Map<string, string[]>();
-  for (const n of nodes) adj.set(n.id, []);
-  for (const e of edges) adj.get(e.source)?.push(e.target);
-
-  const WHITE = 0, GRAY = 1, BLACK = 2;
-  const color = new Map<string, number>();
-  for (const n of nodes) color.set(n.id, WHITE);
-
-  function dfs(id: string): boolean {
-    color.set(id, GRAY);
-    for (const nb of adj.get(id) ?? []) {
-      if (color.get(nb) === GRAY) return true;
-      if (color.get(nb) === WHITE && dfs(nb)) return true;
-    }
-    color.set(id, BLACK);
-    return false;
-  }
-
   for (const n of nodes) {
-    if (color.get(n.id) === WHITE && dfs(n.id)) return true;
+    inDegree.set(n.id, 0);
+    adj.set(n.id, []);
   }
-  return false;
+  for (const e of edges) {
+    if (!inDegree.has(e.source) || !inDegree.has(e.target)) continue;
+    adj.get(e.source)!.push(e.target);
+    inDegree.set(e.target, (inDegree.get(e.target) ?? 0) + 1);
+  }
+
+  const queue: string[] = [];
+  for (const [id, deg] of inDegree) {
+    if (deg === 0) queue.push(id);
+  }
+
+  let visited = 0;
+  while (queue.length > 0) {
+    const node = queue.shift()!;
+    visited++;
+    for (const neighbor of adj.get(node) ?? []) {
+      const newDeg = (inDegree.get(neighbor) ?? 0) - 1;
+      inDegree.set(neighbor, newDeg);
+      if (newDeg === 0) queue.push(neighbor);
+    }
+  }
+
+  return visited !== nodes.length;
 }
 
 /** Build a dag_definition JSON object from canvas nodes and edges. */
